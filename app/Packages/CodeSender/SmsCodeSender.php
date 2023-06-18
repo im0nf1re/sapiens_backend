@@ -18,6 +18,7 @@ class SmsCodeSender implements CodeSender
         $message = [
             'phone' => $to,
             'text' => 'Ваш код восстановления: ' . $code,
+            'sender' => 'Sapiens'
         ];
 
         $response = $this->gate->send([$message]);
