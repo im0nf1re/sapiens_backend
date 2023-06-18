@@ -11,4 +11,6 @@ interface UserRepositoryInterface
     public function findByPhone(string $phone): ?User;
 
     public function create(array $data): User;
+
+    public function updateWithNewPassword(User $user, $password): User;
 }

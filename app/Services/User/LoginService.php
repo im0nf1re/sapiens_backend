@@ -19,7 +19,7 @@ class LoginService
      
         if (!$user || !Hash::check($request->password, $user->password)) {
             throw ValidationException::withMessages([
-                'phone' => ['Введенные данные не верны.'],
+                'phone' => ['The entered data is not correct'],
             ]);
         }
      

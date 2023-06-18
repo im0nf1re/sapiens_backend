@@ -2,10 +2,8 @@
 
 namespace App\Services\User;
 
-use App\Models\User;
 use App\Repositories\Interfaces\UserRepositoryInterface;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
 
 class CreateService
@@ -19,7 +17,7 @@ class CreateService
 
         if ($user) {
             throw ValidationException::withMessages([
-                'phone' => ['Пользователь уже существует'],
+                'phone' => ['User already exists'],
             ]);
         }
 

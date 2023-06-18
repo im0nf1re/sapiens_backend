@@ -23,8 +23,8 @@ class SendCodeService
             throw new ModelNotFoundException('User not found');
         }
 
-        if (!$this->resetPasswordCodeRepository->findByUserFor1Min($user)) {
-            throw new Exception("To send code again you should wait at least a minute!");
+        if ($this->resetPasswordCodeRepository->findByUserFor1Min($user)) {
+            throw new Exception("To send code again you should wait at least a minute");
         }
 
         $this->resetPasswordCodeRepository->deleteOldCodesForUser($user);

@@ -24,7 +24,7 @@ class CheckCodeService
 
         $resetPasswordCode = $this->resetPasswordCodeRepository->findByUserAndCodeFor30Min($user, $request->code);
         if (!$resetPasswordCode) {
-            throw new Exception('Code is not match!');
+            throw new Exception('Code is not match');
         }
 
         return $resetPasswordCode;

@@ -44,13 +44,4 @@ class User extends Authenticatable
         'email_verified_at' => 'datetime',
         'password' => 'hashed',
     ];
-
-    public function updateWithNewPassword($password): User 
-    {
-        $this->password = Hash::make($password);
-        $this->tokens()->delete();
-        $this->save();
-
-        return $this;
-    }
 }
