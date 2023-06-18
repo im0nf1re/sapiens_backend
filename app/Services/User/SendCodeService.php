@@ -2,10 +2,9 @@
 
 namespace App\Services\User;
 
-use App\Models\ResetPasswordCode;
-use App\Models\User;
 use App\Packages\CodeSender\Interfaces\CodeSender;
-use Carbon\Carbon;
+use App\Repositories\Interfaces\ResetPasswordCodeRepositoryInterface;
+use App\Repositories\Interfaces\UserRepositoryInterface;
 use Exception;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\Request;
@@ -13,19 +12,27 @@ use Illuminate\Http\Request;
 class SendCodeService
 {
     public function __construct(
-        private CodeSender $codeSender
+        private CodeSender $codeSender,
+        private UserRepositoryInterface $userRepository,
+        private ResetPasswordCodeRepositoryInterface $resetPasswordCodeRepository
     ) {}
 
     public function run(Request $request) {
-        $user = $this->getUser($request->to, $request->type);
+        $user = $this->userRepository->findByTypeAndTo($request->type, $request->to);
+        if (!$user) {
+            throw new ModelNotFoundException('User not found');
+        }
 
-        if (!$this->isMinuteInterval($user)) {
+        if (!$this->resetPasswordCodeRepository->findByUserFor1Min($user)) {
             throw new Exception("To send code again you should wait at least a minute!");
         }
 
-        $this->clearOldCodesForUser($user);
+        $this->resetPasswordCodeRepository->deleteOldCodesForUser($user);
         $code = $this->generateCode();
-        $this->saveCode($code, $user);
+        $this->resetPasswordCodeRepository->create([
+            'user_id' => $user->id,
+            'code' => $code
+        ]);
         
         $this->codeSender->send($code, $request->to);
     }
@@ -34,38 +41,5 @@ class SendCodeService
     {
         $code = sprintf("%04d", mt_rand(0, 9999));
         return $code;
-    }
-
-    private function getUser($to, $type): User
-    {
-        $user = User::where($type, $to)->first();
-        if (!$user) {
-            throw new ModelNotFoundException('User not found');
-        }
-
-        return $user;
-    }
-
-    private function isMinuteInterval(User $user) {
-        $resetPasswordCode = ResetPasswordCode::where('user_id', $user->id)->where('created_at', '>', Carbon::now()->subMinute())->first();
-
-        if ($resetPasswordCode) {
-            return false;
-        } else {
-            return true;
-        }
-    }
-
-    private function saveCode(string $code, User $user): void
-    {
-        $resetPasswordCode = new ResetPasswordCode();
-        $resetPasswordCode->user_id = $user->id;
-        $resetPasswordCode->code = $code;
-        $resetPasswordCode->save();
-    }
-
-    private function clearOldCodesForUser(User $user): void
-    {
-        ResetPasswordCode::where('user_id', $user->id)->delete();
     }
 }

@@ -3,42 +3,26 @@
 namespace App\Services\User;
 
 use App\Models\ResetPasswordCode;
-use App\Models\ResetPasswordToken;
-use App\Models\User;
-use App\Packages\CodeSender\Interfaces\CodeSender;
-use Carbon\Carbon;
+use App\Repositories\Interfaces\ResetPasswordCodeRepositoryInterface;
+use App\Repositories\Interfaces\UserRepositoryInterface;
 use Exception;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Hash;
 
 class CheckCodeService
 {
+    public function __construct(
+        private UserRepositoryInterface $userRepository,
+        private ResetPasswordCodeRepositoryInterface $resetPasswordCodeRepository
+    ) {}
+
     public function run(Request $request): ResetPasswordCode {
-        $user = $this->getUser($request->to, $request->type);
-
-        $resetPasswordCode = $this->getResetPasswordCode($user, $request->code);
-
-        return $resetPasswordCode;
-    }
-
-    private function getUser($to, $type): User
-    {
-        $user = User::where($type, $to)->first();
+        $user = $this->userRepository->findByTypeAndTo($request->type, $request->to);
         if (!$user) {
             throw new ModelNotFoundException('User not found');
         }
 
-        return $user;
-    }
-
-    private function getResetPasswordCode(User $user, string $code): ResetPasswordCode
-    {
-        $resetPasswordCode = ResetPasswordCode::where('user_id', $user->id)
-            ->where('created_at', '>', Carbon::now()->subMinutes(30))
-            ->where('code', $code)
-            ->first();
-
+        $resetPasswordCode = $this->resetPasswordCodeRepository->findByUserAndCodeFor30Min($user, $request->code);
         if (!$resetPasswordCode) {
             throw new Exception('Code is not match!');
         }

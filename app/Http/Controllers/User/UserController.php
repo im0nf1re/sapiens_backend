@@ -89,7 +89,11 @@ class UserController extends Controller
         }
     }
 
-    public function resetPassword(ResetPasswordRequest $request, CheckCodeService $checkCodeService, ResetPasswordService $resetPasswordService) 
+    public function resetPassword(
+        ResetPasswordRequest $request, 
+        CheckCodeService $checkCodeService, 
+        ResetPasswordService $resetPasswordService
+    )
     {
         DB::beginTransaction();
         try {
