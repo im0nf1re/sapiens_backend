@@ -4,3 +4,4 @@
 	* UserService
 	* SendResetCode
 	* ResetPasswordActivity.sendCodeRequest
+2) настроить безопасность репозитория
