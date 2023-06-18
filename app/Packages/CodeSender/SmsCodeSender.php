@@ -22,9 +22,12 @@ class SmsCodeSender implements CodeSender
         ];
 
         $response = $this->gate->send([$message]);
-
+        
         if ($response['status'] != 'ok') {
-            throw new Exception($response['messages'][0]);
+            throw new Exception("Can't connect to SMS gate!");
+        }
+        if (isset($response['messages'][0]['status']) && $response['messages'][0]['status'] !== 'accepted') {
+            throw new Exception($response['messages'][0]['status']);
         }
     }
 }
