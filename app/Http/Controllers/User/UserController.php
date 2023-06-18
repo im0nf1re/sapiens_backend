@@ -8,61 +8,32 @@ use App\Http\Requests\User\LoginRequest;
 use App\Http\Requests\User\RegisterRequest;
 use App\Http\Requests\User\ResetPasswordRequest;
 use App\Http\Requests\User\SendResetCodeRequest;
-use App\Models\User;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Mail;
-use Illuminate\Validation\ValidationException;
+use App\Services\User\CreateService;
+use App\Services\User\LoginService;
+use App\Services\User\SendCodeService;
 
 class UserController extends Controller
 {
-    public function login(LoginRequest $request)
+    public function login(LoginRequest $request, LoginService $loginService)
     {   
-        $user = User::where('phone', $request->phone)->first();
-     
-        if (!$user || !Hash::check($request->password, $user->password)) {
-            throw ValidationException::withMessages([
-                'phone' => ['Введенные данные не верны.'],
-            ]);
-        }
-     
-        return $user->createToken($request->phone)->plainTextToken;
-    }
-
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
-    {
-        //
+        $token = $loginService->run($request);
+        return response($token);
     }
 
     /**
      * Store a newly created resource in storage.
      */
-    public function register(RegisterRequest $request)
+    public function register(RegisterRequest $request, CreateService $createService)
     {
-        $user = User::where('phone', $request->phone)->first();
-
-        if ($user) {
-            throw ValidationException::withMessages([
-                'phone' => ['Пользователь уже существует'],
-            ]);
-        }
-
-        $user = new User();
-        $user->name = $request->name;
-        $user->phone = $request->phone;
-        $user->email = $request->email;
-        $user->password = Hash::make($request->password);
-        $user->save();
-
-        return $user->createToken($request->phone)->plainTextToken;
+        $token = $createService->run($request);
+        return response($token);
     }
 
-    public function sendResetCode(SendResetCodeRequest $request) 
+    public function sendResetCode(SendResetCodeRequest $request, SendCodeService $sendCodeService)  
     {
-        
+        $sendCodeService->run($request);
+
+        return response('sended');
     }
 
     public function checkResetCode(CheckResetCodeRequest $request) 
@@ -73,29 +44,5 @@ class UserController extends Controller
     public function resetPassword(ResetPasswordRequest $request) 
     {
 
-    }
-
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
-    {
-        //
     }
 }

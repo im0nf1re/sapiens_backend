@@ -3,17 +3,10 @@
 namespace App\Http\Requests\User;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class SendResetCodeRequest extends FormRequest
-{
-    /**
-     * Determine if the user is authorized to make this request.
-     */
-    public function authorize(): bool
-    {
-        return false;
-    }
-
+{   
     /**
      * Get the validation rules that apply to the request.
      *
@@ -22,7 +15,8 @@ class SendResetCodeRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'email' => 'required|email'
+            'to' => 'required',
+            'type' => ['required', Rule::in(['phone', 'email'])],
         ];
     }
 }
