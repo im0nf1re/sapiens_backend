@@ -19,9 +19,9 @@ class SendCodeService
     public function run(Request $request) {
         $user = $this->getUser($request->to, $request->type);
 
-        // if (!$this->isMinuteInterval($user)) {
-        //     throw new Exception("To send code again you should wait at least a minute!");
-        // }
+        if (!$this->isMinuteInterval($user)) {
+            throw new Exception("To send code again you should wait at least a minute!");
+        }
 
         $this->clearOldCodesForUser($user);
         $code = $this->generateCode();
