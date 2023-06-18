@@ -8,16 +8,31 @@ use App\Http\Requests\User\LoginRequest;
 use App\Http\Requests\User\RegisterRequest;
 use App\Http\Requests\User\ResetPasswordRequest;
 use App\Http\Requests\User\SendResetCodeRequest;
+use App\Services\User\CheckCodeService;
 use App\Services\User\CreateService;
 use App\Services\User\LoginService;
+use App\Services\User\ResetPasswordService;
 use App\Services\User\SendCodeService;
+use Illuminate\Support\Facades\DB;
+use Throwable;
 
 class UserController extends Controller
 {
     public function login(LoginRequest $request, LoginService $loginService)
     {   
-        $token = $loginService->run($request);
-        return response($token);
+        DB::beginTransaction();
+        try {
+
+            $token = $loginService->run($request);
+
+            DB::commit();
+            return response($token);
+
+        } catch (Throwable $exception) {
+
+            DB::rollBack();
+            throw $exception;
+        }
     }
 
     /**
@@ -25,24 +40,70 @@ class UserController extends Controller
      */
     public function register(RegisterRequest $request, CreateService $createService)
     {
-        $token = $createService->run($request);
-        return response($token);
+        DB::beginTransaction();
+        try {
+
+            $token = $createService->run($request);
+        
+            DB::commit();
+            return response($token);
+
+        } catch (Throwable $exception) {
+
+            DB::rollBack();
+            throw $exception;
+        }
     }
 
     public function sendResetCode(SendResetCodeRequest $request, SendCodeService $sendCodeService)  
     {
-        $sendCodeService->run($request);
+        DB::beginTransaction();
+        try {
 
-        return response('sended');
+            $sendCodeService->run($request);
+
+            DB::commit();
+            return response('sended');
+
+        } catch (Throwable $exception) {
+
+            DB::rollBack();
+            throw $exception;
+        }
     }
 
-    public function checkResetCode(CheckResetCodeRequest $request) 
+    public function checkResetCode(CheckResetCodeRequest $request, CheckCodeService $checkCodeService) 
     {
+        DB::beginTransaction();
+        try {
+
+            $checkCodeService->run($request);
         
+            DB::commit();
+            return response('ok');
+
+        } catch (Throwable $exception) {
+
+            DB::rollBack();
+            throw $exception;
+        }
     }
 
-    public function resetPassword(ResetPasswordRequest $request) 
+    public function resetPassword(ResetPasswordRequest $request, CheckCodeService $checkCodeService, ResetPasswordService $resetPasswordService) 
     {
+        DB::beginTransaction();
+        try {
 
+            $resetPasswordCode = $checkCodeService->run($request);
+            $resetPasswordService->run($request, $resetPasswordCode);
+        
+            DB::commit();
+            return response('ok');
+
+        } catch (Throwable $exception) {
+
+            DB::rollBack();
+            throw $exception;
+        }
     }
 }

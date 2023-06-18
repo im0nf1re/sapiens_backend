@@ -3,17 +3,10 @@
 namespace App\Http\Requests\User;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class ResetPasswordRequest extends FormRequest
 {
-    /**
-     * Determine if the user is authorized to make this request.
-     */
-    public function authorize(): bool
-    {
-        return false;
-    }
-
     /**
      * Get the validation rules that apply to the request.
      *
@@ -22,7 +15,10 @@ class ResetPasswordRequest extends FormRequest
     public function rules(): array
     {
         return [
-            //
+            'code' => 'required|numeric',
+            'to' => 'required|string',
+            'type' => ['required', Rule::in(['phone', 'email'])],
+            'password' => ['required', 'min:6', 'confirmed'],
         ];
     }
 }
