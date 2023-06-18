@@ -3,10 +3,6 @@
 namespace App\Services\User;
 
 use App\Models\ResetPasswordCode;
-use App\Models\User;
-use Carbon\Carbon;
-use Exception;
-use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 
