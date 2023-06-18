@@ -3,18 +3,18 @@
 namespace App\Services\User;
 
 use App\Models\ResetPasswordCode;
+use App\Repositories\Interfaces\UserRepositoryInterface;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Hash;
 
 class ResetPasswordService
 {
+    public function __construct(
+        private UserRepositoryInterface $userRepository
+    ) {}
+
     public function run(Request $request, ResetPasswordCode $resetPasswordCode) {
         $user = $resetPasswordCode->user;
-
-        $user->password = Hash::make($request->password);
-        $user->tokens()->delete();
+        $this->userRepository->updateWithNewPassword($user, $request->password);
         $resetPasswordCode->delete();
-
-        $user->save();
     }
 }

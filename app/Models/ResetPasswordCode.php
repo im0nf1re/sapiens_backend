@@ -10,6 +10,11 @@ class ResetPasswordCode extends Model
 {
     use HasFactory;
 
+    protected $fillable = [
+        'code',
+        'user_id'
+    ];
+
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);

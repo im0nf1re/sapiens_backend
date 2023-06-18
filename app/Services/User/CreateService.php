@@ -2,28 +2,31 @@
 
 namespace App\Services\User;
 
-use App\Models\User;
+use App\Repositories\Interfaces\UserRepositoryInterface;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
 
 class CreateService
 {
+    public function __construct(
+        private UserRepositoryInterface $userRepository
+    ) {}
+
     public function run(Request $request) {
-        $user = User::where('phone', $request->phone)->first();
+        $user = $this->userRepository->findByPhone($request->phone);
 
         if ($user) {
             throw ValidationException::withMessages([
-                'phone' => ['Пользователь уже существует'],
+                'phone' => ['User already exists'],
             ]);
         }
 
-        $user = new User();
-        $user->name = $request->name;
-        $user->phone = $request->phone;
-        $user->email = $request->email;
-        $user->password = Hash::make($request->password);
-        $user->save();
+        $user = $this->userRepository->create([
+            'name' => $request->name,
+            'email' => $request->email,
+            'phone' => $request->phone,
+            'password' => $request->password
+        ]);
 
         return $user->createToken($request->phone)->plainTextToken;
     }
