@@ -2,7 +2,7 @@
 
 namespace App\Services\User;
 
-use App\Packages\CodeSender\Interfaces\CodeSender;
+use App\Jobs\SendCodeJob;
 use App\Repositories\Interfaces\ResetPasswordCodeRepositoryInterface;
 use App\Repositories\Interfaces\UserRepositoryInterface;
 use Exception;
@@ -12,7 +12,6 @@ use Illuminate\Http\Request;
 class SendCodeService
 {
     public function __construct(
-        private CodeSender $codeSender,
         private UserRepositoryInterface $userRepository,
         private ResetPasswordCodeRepositoryInterface $resetPasswordCodeRepository
     ) {}
@@ -34,7 +33,7 @@ class SendCodeService
             'code' => $code
         ]);
         
-        $this->codeSender->send($code, $request->to);
+        SendCodeJob::dispatch($code, $request->to);
     }
 
     private function generateCode(): string
